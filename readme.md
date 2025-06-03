@@ -38,6 +38,37 @@
 3. Redis/RabbitMQ/Kafka;
 4. Выбор разных моделей для детекции/трекинга.
 
+## Структура
+
+### Сервер
+
+```
+backend/
+├── backend/
+|   |─── api/
+│        ├── serializers.py   # Сериализаторы
+│        ├── urls.py          # Маршруты
+│        └── views.py         # Методы
+│   ├── settings.py      # Настройки (втф)
+│   └── urls.py          # Маршруты
+├── database/
+│   └── models.py        # ORM-модели
+├── manage.py
+└── Dockerfile
+```
+
+### ML-сервис
+
+```
+ml_service/
+├── app/
+│   ├── app.py           # FastAPI приложение
+│   ├── models.py        # Загрузка ML-моделей
+│   ├── processing.py    # Логика обработки видео
+├── requirements.txt
+└── Dockerfile
+```
+
 ## Документация
 
 ### Модели
