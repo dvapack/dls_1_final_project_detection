@@ -1,3 +1,3 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 
-from .models import VideoModel
+# Create your views here.
