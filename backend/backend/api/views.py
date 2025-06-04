@@ -91,19 +91,19 @@ class UploadVideoView(APIView):
                 'resultVideoFile': None
             }
 
-            video_serilizer = VideoModelSerializer(data=video_data)
-            video_serilizer.is_valid(raise_exception=True)
-            video_instance = video_serilizer.save()
+            video_serializer = VideoModelSerializer(data=video_data)
+            video_serializer.is_valid(raise_exception=True)
+            video_instance = video_serializer.save()
 
             operation_data = {
                 'userID': user_id,
                 'videoID': video_instance
             }
-            operation_serilizer = UsageHistorySerializer(data=operation_data)
-            operation_serilizer.is_valid(raise_exception=True)
-            operation_instance = operation_serilizer.save()
+            operation_serializer = UsageHistorySerializer(data=operation_data)
+            operation_serializer.is_valid(raise_exception=True)
+            operation_serializer.save()
 
-            return Response(operation_serilizer.data, status=status.HTTP_201_CREATED)
+            return Response(operation_serializer.data, status=status.HTTP_201_CREATED)
 
         except Exception as e:
             return Response({"error": str(e)},
@@ -120,8 +120,41 @@ class AnalyzeVideoView(APIView):
             
             video_id = request.data.get('video_id')
             operation_id = request.data.get('operation_id')
-            
 
+            operation = UsageHistory.objects.get(id=operation_id)
+            video = VideoModel.objects.get(id=video_id)
         except Exception as e:
             return Response({"error": str(e)},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)           
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        try:
+            with default_storage.open(video.initialVideoFile.path, 'rb') as f:
+                    response = requests.post(
+                        'http://ml-service:8000/process',
+                        files={'file': f},
+                        timeout=300
+                    )
+
+            if response.status_code == 200:
+                result_filename = f"user_{user_id}/results/processed_{video_id}.mp4"
+                result_path = default_storage.save(result_filename, response.content)
+                
+                video_data = {
+                    'resultVideoFile': result_path
+                }
+                video_serializer = VideoModelSerializer(video, data=video_data, partial=True)
+                video_serializer.is_valid(raise_exception=True)
+                video_serializer.save()
+
+                operation_data = {
+                    'status': 'completed'
+                }
+                operation_serializer = UsageHistorySerializer(operation, data=operation_data, partial=True)
+                operation_serializer.is_valid(raise_exception=True)
+                operation_serializer.save()
+
+                return Response(operation_serializer.data, status=status.HTTP_200_OK)
+            else:
+                raise Exception(f"ML service error: {response.text}")
+        except Exception as e:
+            return Response({"error": str(e)},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)            
