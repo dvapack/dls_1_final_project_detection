@@ -38,18 +38,18 @@ class ChangePasswordSerializer(serializers.Serializer):
 class VideoModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = VideoModel
-        fields = ['imageID', 'image_base64', 'createdAt', 'rating']
+        fields = ['videoID', 'initialVideoFile', 'resultVideoFile']
 
     def create(self, validated_data):
-        image = VideoModel.objects.create(
-            image_base64=validated_data.get('image_base64', ''),
-            rating=validated_data.get('rating', 0.0)
+        video = VideoModel.objects.create(
+            initialVideoFile=validated_data.get('initialVideoFile', ''),
+            resultVideoFile=validated_data.get('resultVideoFile', '')
         )
-        return image
+        return video
 
     def update(self, instance, validated_data):
-        instance.image_base64 = validated_data.get('image_base64', instance.image_base64)
-        instance.rating = validated_data.get('rating', instance.rating)
+        instance.initialVideoFile = validated_data.get('initialVideoFile', instance.initialVideoFile)
+        instance.resultVideoFile = validated_data.get('resultVideoFile', instance.resultVideoFile)
         instance.save()
         return instance
 
@@ -57,46 +57,25 @@ class VideoModelSerializer(serializers.ModelSerializer):
 class UsageHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = UsageHistory
-        fields = ['operationID', 'userID', 'imageID', 'prompt', 'createdAt', 'updatedAt', 'status']
+        fields = ['operationID', 'userID', 'videoID', 'status', 'detectionModel', 'trackingModel', 'analysisModel']
 
     def create(self, validated_data):
         usage = UsageHistory.objects.create(
             userID=validated_data.get('userID', ''),
-            prompt=validated_data.get('prompt', ''),
-            status=validated_data.get('status', 'created'),
-            imageID=None
+            detectionModel=validated_data.get('detectionModel', 'Yolo'),
+            trackingModel=validated_data.get('trackingModel', 'ByteTrack'),
+            analysisModel=validated_data.get('analysisModel', 'I3D'),
+            status=validated_data.get('status', 'pending'),
+            videoID=None
         )
         return usage
 
     def update(self, instance, validated_data):
-        instance.prompt = validated_data.get('prompt', instance.prompt)
+        instance.detectionModel = validated_data.get('detectionModel', instance.detectionModel)
+        instance.trackingModel = validated_data.get('trackingModel', instance.trackingModel)
+        instance.analysisModel = validated_data.get('analysisModel', instance.analysisModel)
         instance.status = validated_data.get('status', instance.status)
-        instance.imageID = validated_data.get('imageID', instance.imageID)
+        instance.videoID = validated_data.get('videoID', instance.videoID)
         instance.save()
         return instance
     
-
-
-
-    
-class GenaGenerateSerializer(serializers.Serializer):
-    user_id = serializers.IntegerField(required=True)
-    prompt = serializers.CharField(required=True)
-    images = serializers.IntegerField(default=1, required=False)
-    width = serializers.IntegerField(default=1024, required=False)
-    height = serializers.IntegerField(default=1024, required=False)
-
-    def validate_images(self, value):
-        if value < 1:
-            raise serializers.ValidationError("Количество изображений должно быть не меньше 1.")
-        return value
-
-    def validate_width(self, value):
-        if value <= 0:
-            raise serializers.ValidationError("Ширина должна быть положительным числом.")
-        return value
-
-    def validate_height(self, value):
-        if value <= 0:
-            raise serializers.ValidationError("Высота должна быть положительным числом.")
-        return value
