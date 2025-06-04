@@ -79,3 +79,8 @@ class UsageHistorySerializer(serializers.ModelSerializer):
         instance.save()
         return instance
     
+class AnalyzeSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField(required=True)
+    video_id = serializers.IntegerField(required=True)
+    operation_id = serializers.IntegerField(required=True)
+    

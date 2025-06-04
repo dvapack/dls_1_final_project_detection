@@ -15,7 +15,6 @@ class VideoModel(models.Model):
     )
     
 
-
 class UsageHistory(models.Model):
     operationID = models.AutoField(primary_key=True)
     userID = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -23,12 +22,12 @@ class UsageHistory(models.Model):
     status = models.CharField(
         max_length=20,
         choices=[
-            ('pending', 'Ожидает обработки'),
-            ('processing', 'В процессе'),
+            ('uploaded', 'Видеофайл загружен'),
+            ('processing', 'Обработка'),
             ('completed', 'Завершено'),
             ('failed', 'Ошибка')
         ],
-        default='pending'
+        default='uploaded'
     )
     detectionModel = models.CharField(max_length=20)
     trackingModel = models.CharField(max_length=20)
