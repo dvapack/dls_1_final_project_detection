@@ -13,9 +13,7 @@ urlpatterns = [
     path('users/history/', GetUserHistoryView.as_view(), name='history'),
     path('users/logout/', LogoutView.as_view(), name='logout'),
 
-    path('upload/', UploadVideoView.as_view(), name='upload'), # POST /upload/ – загрузка видео
-
-    path('analyze/', AnalyzeVideoView.as_view(), name='analyze'), # POST /analyze/{video_id} – запуск анализа (можно отложенно или по кнопке)
-
-    path('result/', ResultView.as_view(), name='result'), # GET /result/{video_id} – получить результат (видео/JSON)
+    path('upload/', UploadVideoView.as_view(), name='upload'),
+    path('analyze/', AnalyzeVideoView.as_view(), name='analyze'),
+    path('result/', ResultView.as_view(), name='result')
 ]

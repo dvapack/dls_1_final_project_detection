@@ -157,4 +157,31 @@ class AnalyzeVideoView(APIView):
                 raise Exception(f"ML service error: {response.text}")
         except Exception as e:
             return Response({"error": str(e)},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)            
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)      
+
+
+class ResultView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        try:
+            user_id = request.data.get('user_id')
+            if request.user.id != int(user_id):
+                return Response({"message": "Доступ к данным другого пользователя запрещен"}, 
+                                status=status.HTTP_403_FORBIDDEN)
+
+            video_id = request.data.get('video_id')
+            video = VideoModel.objects.get(id=video_id)           
+            file = default_storage.open(video.resultVideoFile.path)
+            content_type = 'video/mp4'
+            response = Response(
+                file,
+                content_type=content_type
+            )
+            response['Content-Disposition'] = f'attachment; filename="processed_{video_id}.mp4"'
+
+            return Response(response, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
